@@ -5,3 +5,14 @@ test/temp
 bower_components
 .tmp
 test/bower_components/
+/.idea/.name
+/.idea/encodings.xml
+/.idea/jsLibraryMappings.xml
+/.idea/libraries/tiny_polyblog_node_modules.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/scopes/scope_settings.xml
+/.idea/tiny-polyblog.iml
+/.idea/vcs.xml
+/.idea/workspace.xml
+/.idea/watcherTasks.xml

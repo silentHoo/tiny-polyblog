@@ -16,7 +16,27 @@ core-toolbar {
   background-color: #1e5996;
 }
 
-#listview {
-  width: 60%;
-  margin: 0 auto;
+fieldset {
+  width: 90%;
+  margin: 0px auto;
+  border: 1px grey dashed;
+  padding: 15px;
+
+  table tr td:nth-child(3) {
+    width: 50%;
+
+    input {
+      width: 100%;
+    }
+  }
+
+  #radio-group {
+    text-align: center;
+  }
+}
+
+#listview-wrapper {
+  position: relative;
+  height: 60%;
+  margin-top: 20px;
 }

@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>poly foo</title>
+  <title>Listview Demo</title>
   <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
   <!-- build:css styles/main.css -->
@@ -22,15 +22,57 @@
 </head>
 
 <body unresolved fullbleed layout vertical>
+
+  <!-- to use Polymer's data-binding features, we must ensure to use the inherited and modified Polymer `template` -->
   <template is="auto-binding" id="app">
 
     <!-- Main Toolbar -->
     <core-toolbar>
-      <span>{{appName}} - JavaMagazin Example</span>
+      <!-- as we have auto-binding enabled we can make use of the data-binding features -->
+      <span>{{appName}} for ListView</span>
     </core-toolbar>
 
     <!-- Main Content -->
-    <ph-blog-listview id="listview"></ph-blog-listview>
+    <fieldset>
+      <legend>Configuration for <i>ph-listview</i></legend>
+
+      <div id="radio-group">
+        <paper-radio-group selected="youtube" on-core-select="{{ feedSourceSelected }}">
+          <paper-radio-button name="youtube" label="Popular YouTube Videos"></paper-radio-button>
+          <paper-radio-button name="welt" label="Welt.de RSS-Feed"></paper-radio-button>
+        </paper-radio-group>
+      </div>
+
+      <template if="{{ listViewConfig }}">
+        <table>
+          <!--
+            We iterate over the config object which stores all properties provided by the component to have some
+            comfortable input fields to play with. The array is build in the app.js file.
+          -->
+          <template repeat="{{ prop in listViewConfig }}">
+            <tr>
+              <td>{{ prop.name }}</td>
+              <td>=</td>
+              <td><input type="text" data-prop="{{ prop.name }}" value="{{ prop.value }}" on-keyup="{{ itemChanged }}"></td>
+              <td>&nbsp;</td>
+              <td>{{ prop.validPublishValues }}</td>
+            </tr>
+          </template>
+        </table>
+      </template>
+    </fieldset>
+
+    <!-- this is our component wrapper to properly place the component on the page -->
+    <div id="listview-wrapper">
+      <!-- the main component is here and is configured by data-binding which is also set in app.js-->
+      <ph-listview
+        id="listView"
+        viewType="{{ listViewAttributes.viewType }}"
+        feed="{{ listViewAttributes.feed }}"
+        handleAs="{{ listViewAttributes.handleAs }}"
+        sortByDateAsc="{{ listViewAttributes.sortByDateAsc }}">
+      </ph-listview>
+    </div>
 
   </template>
 
