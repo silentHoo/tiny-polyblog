@@ -92,6 +92,7 @@ Please note: The date must be parseable by the `Moment.js` library.
   <template>
     <link rel="stylesheet" href="ph-listview.css">
 
+    <!-- non-visible 3rd party component -->
     <core-ajax id="ajax" auto url="{{ feed }}" on-core-complete="{{ _requestCompleted }}"></core-ajax>
 
     <!-- template binding to 'default' -->
@@ -204,6 +205,9 @@ Please note: The date must be parseable by the `Moment.js` library.
         // initialize private variables only here and not on the prototype itself to prevent from
         // getting a weird shared state across multiple instances of this component
         this._responseParseFunc = null;
+      },
+
+      domReady: function() {
         this._init();
       },
 
@@ -230,6 +234,10 @@ Please note: The date must be parseable by the `Moment.js` library.
 
       // callback handler
       _requestCompleted: function(event, detail, sender) {
+        if (detail.response != 200) {
+          console.warn('The request to the given URL returns error code "' + detail.response + '". Please check the URL.');
+          return;
+        }
         this._init();
 
         var response;
@@ -258,6 +266,20 @@ Please note: The date must be parseable by the `Moment.js` library.
 
       _init: function() {
         this._entries = [];
+
+        // check if all is alright
+        if (this.feed === '') {
+          console.warn('The current URL is empty, please specify one, that I can make a request ;)');
+        }
+
+        if (this.handleAs !== 'json' && this.handleAs !== 'rss' && this.handleAs !== 'xml') {
+          console.warn('You must set the response type (attribute handleAs) of the given URL to proceed. ' +
+            'Please specify json, rss or xml.');
+        }
+
+        if (this.viewType !== 'compact' && this.viewType !== 'default' && this.viewType !== '') {
+          console.warn('You have not set a viewType. Please use compact or default or keep it empty.');
+        }
       },
 
       // processes the response from the core-ajax component
