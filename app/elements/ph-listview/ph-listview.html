@@ -113,7 +113,10 @@ Please note: The date must be parseable by the `Moment.js` library.
             <div class="content" flex>
               <div vertical layout>
                 <div class="title">{{ model.title }}</div>
-                <div class="subtitle"><span class="date">{{ model.date | _filterDateView }}</span>, <span class="category">{{ model.category }}</span></div>
+                <div class="subtitle">
+                  <span class="date">{{ model.date | _filterDateView }}</span>,
+                  <span class="category">{{ model.category }}</span>
+                </div>
                 <div class="description">{{ model.description }}</div>
                 <div class="link"><a href="{{ model.link }}">Weiterlesen...</a></div>
               </div>
@@ -132,7 +135,10 @@ Please note: The date must be parseable by the `Moment.js` library.
             <div class="content" flex>
               <div vertical layout>
                 <div class="title"><a href="{{ model.link }}">{{ model.title }}</a></div>
-                <div class="subtitle"><span class="date">{{ model.date | _filterDateView }}</span>, <span class="category">{{ model.category }}</span></div>
+                <div class="subtitle">
+                  <span class="date">{{ model.date | _filterDateView }}</span>,
+                  <span class="category">{{ model.category }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -181,7 +187,8 @@ Please note: The date must be parseable by the `Moment.js` library.
           feed: '',
 
           /**
-           * The `handleAs` attribute sets the format for the given feed. Valid inputs are **xml**, **json** and **xml**.
+           * The `handleAs` attribute sets the format for the given feed. Valid inputs are **xml**, **json** and
+           * **xml**.
            *
            * @attribute handleAs
            * @type string
@@ -191,8 +198,8 @@ Please note: The date must be parseable by the `Moment.js` library.
 
           /**
            * The `viewType` attribute sets the used view which is represented by the component. You can choose between
-           * **''** (empty string, which is the same as **'default'**) or **'compact'**. **'default'** shows you a title,
-           * date, category, description and an image. A link to the full article/video/whatever is linked too.
+           * **''** (empty string, which is the same as **'default'**) or **'compact'**. **'default'** shows you a
+           * title, date, category, description and an image. A link to the full article/video/whatever is linked too.
            * **'compact'** doesn't show an image and the description.
            *
            * @attribute viewType
@@ -311,7 +318,8 @@ Please note: The date must be parseable by the `Moment.js` library.
         //
         _requestCompleted: function(event, detail, sender) {
           if (detail.response != 200) {
-            console.warn('The request to the given URL returns error code "' + detail.response + '". Please check the URL.');
+            console.warn('The request to the given URL returns error code "'
+              + detail.response + '". Please check the URL.');
             return;
           }
           this._entries = [];
