@@ -262,16 +262,17 @@ Please note: The date must be parseable by the `Moment.js` library.
         created: function() {
           // initialize private variables only here and not on the prototype itself to prevent from
           // getting a weird shared state across multiple instances of this component
-          this._responseParseFunc = null; // repsonse parse function
+          this._responseParseFunc = null; // response parse function
           this._sortAsc = false;          // internal flag indicating the sort order
           this._entries = [];
         },
 
-        // validate attributes everytime one changes its value
+        // validate attributes every time one changes its value
         observe: {
-          feed: '_validationWarner',
-          handleAs: '_validationWarner',
-          viewType: '_validationWarner'
+          feed: '_validateFeed',
+          handleAs: '_validateHandleAs',
+          viewType: '_validateViewType',
+          sortByDateAsc: '_validateSortByDateAsc'
         },
 
         //
@@ -279,14 +280,6 @@ Please note: The date must be parseable by the `Moment.js` library.
         //
         // https://www.polymer-project.org/0.5/docs/polymer/polymer.html#change-watchers
         //
-
-        viewTypeChanged: function(oldVal, newVal) {
-          this.viewType = newVal === '' ? 'default' : newVal;
-        },
-
-        sortByDateAscChanged: function(oldVal, newVal) {
-          this._sortAsc = (newVal === 'true' || newVal === true);
-        },
 
         _sortAscChanged: function(oldVal, newVal) {
           // resorts only when the sort direction has changed
@@ -322,14 +315,8 @@ Please note: The date must be parseable by the `Moment.js` library.
               + detail.response + '". Please check the URL.');
             return;
           }
-          this._entries = [];
 
-          var response = _handleResponseStatic(this.handleAs, detail);  // static method call
-          if (this.handleAs == 'rss') {
-            // we can only handle rss by default, other formats must be provided by the pase/mapping function
-            this.setResponseParseFunc(this._rssParseFunc);
-          }
-          this._entries = this._responseParseFunc(response);
+          this._entries = this._responseParseFunc(_handleResponseStatic(this.handleAs, detail));
           this.fire('response-proceeded', { msg: 'The response was successfully proceeded' });
         },
 
@@ -337,20 +324,40 @@ Please note: The date must be parseable by the `Moment.js` library.
         // *** private methods ***
         //
 
-        _validationWarner: function() {
-          // check if all is alright
-          if (this.feed === '') {
+        _validateHandleAs: function(oldVal, newVal) {
+          if (newVal !== 'json' && newVal !== 'rss' && newVal !== 'xml') {
+            console.warn('You must set the response type (attribute handleAs) of the given URL to proceed. ' +
+              'Please specify json, rss or xml.');
+            return;
+          }
+
+          if (newVal == 'rss') {
+            // we can only handle rss by default, other formats must be provided by the parse/mapping function
+            this.setResponseParseFunc(this._rssParseFunc);
+          }
+        },
+
+        _validateFeed: function(oldVal, newVal) {
+          if (newVal === '') {
             console.warn('The current URL is empty, please specify one, that I can make a request ;)');
           }
+        },
 
-          if (this.handleAs !== 'json' && this.handleAs !== 'rss' && this.handleAs !== 'xml') {
-            console.warn('You must set the response type (attribute handleAs) of the given URL to proceed. ' +
-            'Please specify json, rss or xml.');
+        _validateViewType: function(oldVal, newVal) {
+          if (newVal !== 'compact' && newVal !== 'default' && newVal !== '') {
+            this.viewType = 'default';
+            console.warn('You have not set a viewType. I assume you will use the default.');
+          }
+        },
+
+        _validateSortByDateAsc: function(oldVal, newVal) {
+          if (newVal === 'true' || newVal === true) {
+            this.sortByDateAsc = true;
+          } else {
+            this.sortByDateAsc = false;
           }
 
-          if (this.viewType !== 'compact' && this.viewType !== 'default' && this.viewType !== '') {
-            console.warn('You have not set a viewType. Please use compact or default or keep it empty.');
-          }
+          this._sortAsc = this.sortByDateAsc;
         },
 
         //
