@@ -93,10 +93,10 @@ Please note: The date must be parseable by the `Moment.js` library.
     <link rel="stylesheet" href="ph-listview.css">
 
     <!-- non-visible 3rd party component -->
-    <core-ajax id="ajax" auto url="{{ feed }}" on-core-complete="{{ _requestCompleted }}"></core-ajax>
+    <core-ajax auto url="{{ feed }}" on-core-complete="{{ _requestCompleted }}"></core-ajax>
 
     <!-- template binding to 'default' -->
-    <template if="{{ (viewType == 'default' || !viewType) && _entries.length > 0 }}" ref="template-default"></template>
+    <template if="{{ (viewType == 'default') && _entries.length > 0 }}" ref="template-default"></template>
 
     <!-- template binding to 'compact' -->
     <template if="{{ viewType == 'compact' && _entries.length > 0 }}" ref="template-compact"></template>
@@ -143,128 +143,11 @@ Please note: The date must be parseable by the `Moment.js` library.
   </template>
 
   <script>
-    Polymer(Polymer.mixin({ // Mixins @see https://www.polymer-project.org/0.5/docs/polymer/helpers.html#using-mixins
-
-      /**
-       * Fired when the request is done and the response data is processed.
-       *
-       * @event response-proceeded
-       */
-
-      // published properties of the custom element
-      // @see https://www.polymer-project.org/0.5/docs/polymer/polymer.html#published-properties
-      publish: {
-        /**
-         * The `feed` attribute sets the json or xml format list which is requested via XMLHTTPRequest
-         * from the remote server.
-         *
-         * @attribute feed
-         * @type string
-         * @default ''
-         */
-        feed: '',
-
-        /**
-         * The `handleAs` attribute sets the format for the given feed. Valid inputs are **xml**, **json** and **xml**.
-         *
-         * @attribute handleAs
-         * @type string
-         * @default 'rss'
-         */
-        handleAs: 'xml',
-
-        /**
-         * The `viewType` attribute sets the used view which is represented by the component. You can choose between
-         * **''** (empty string, which is the same as **'default'**) or **'compact'**. **'default'** shows you a title,
-         * date, category, description and an image. A link to the full article/video/whatever is linked too.
-         * **'compact'** doesn't show an image and the description.
-         *
-         * @attribute viewType
-         * @type string
-         * @default 'default'
-         */
-        viewType: {
-          value: 'default',
-          reflect: true // will be reflected to the custom elements attribute value if the viewType's value changes
-        },
-
-        /**
-         * The `sortByDateAsc` attribute specifies whether the entries should be sorted ascending or descending
-         * by their given date. **true** means the oldest entry is on top of the list, **false** vice versa.
-         *
-         * @attribute sortByDateAsc
-         * @type boolean
-         * @default false
-         */
-        sortByDateAsc: false,
-
-        /**
-         * The `dateFormat` attribute is used to set your own dateFormat which will be parsed by `Moment.js`. See
-         * http://momentjs.com/docs/#/parsing/string-format/ for all formats.
-         *
-         * @attribute dateFormat
-         * @type string
-         * @default ''
-         */
-        dateFormat: ''
-      },
-
-      // *** private attributes ***
-      _sortAsc: false,  // internal flag indicating the sort order
-
-      // *** lifecycle callbacks ***
-      // @see https://www.polymer-project.org/0.5/docs/polymer/polymer.html#lifecyclemethods
-
-      ready: function() {
-        // initialize private variables only here and not on the prototype itself to prevent from
-        // getting a weird shared state across multiple instances of this component
-        this._responseParseFunc = null;
-      },
-
-      domReady: function() {
-        this._init();
-      },
-
-      // *** event delegates ***
-      // @see https://www.polymer-project.org/0.5/docs/polymer/polymer.html#imperative-event-mapping
-      /*eventDelegates: {
-        'response-proceeded': function(event, detail, sender) {
-          console.info('The host element (ph-listview) sent a `response-proceeded` event to the outer world with ' +
-            'msg: "' + detail.msg + '"');
-        }
-      },*/
-
-      /**
-       * This function sets the custom function defined by the consumer to parse the xml or json document
-       * properly. This function *must* return an array in the following structure:
-       *
-       *     ...
-       *     [{
-       *       title: 'My Title',
-       *       date: '2010-01-01T05:06:07',
-       *       category: 'My Category',
-       *       description: 'A bit more text',
-       *       link: 'http://www.google.com/'
-       *     }]
-       *     ...
-       *
-       * @method setResponseParseFunc
-       * @param func the function which parses the response
-       */
-      setResponseParseFunc: function(func) {
-        this._responseParseFunc = func;
-      },
-
-      // callback handler, @see https://www.polymer-project.org/0.5/docs/polymer/polymer.html#declarative-event-mapping
-      _requestCompleted: function(event, detail, sender) {
-        if (detail.response != 200) {
-          console.warn('The request to the given URL returns error code "' + detail.response + '". Please check the URL.');
-          return;
-        }
-        this._init();
-
+    (function() {
+      // private static in IIFE
+      var _handleResponseStatic = function(handleAs, detail) {
         var response;
-        switch (this.handleAs) {
+        switch (handleAs) {
           case 'xml':
           case 'rss':
             response = detail.xhr.responseXML;
@@ -273,81 +156,225 @@ Please note: The date must be parseable by the `Moment.js` library.
             response = detail.xhr.response;
             break;
         }
-        this._proceedResponse(response);
-      },
+        return response;
+      };
 
-      // we cannot rerender the current shown list, so we must set the entries to an empty array to take effect
-      _resortEntries: function() {
-        var tmp = this._entries;
-        this._entries = [];
-        this.job('a bit hackish', function() {
-          this._entries = tmp;
-        });
-      },
+      Polymer(Polymer.mixin({ // Mixins @see https://www.polymer-project.org/0.5/docs/polymer/helpers.html#using-mixins
 
-      // *** private methods ***
+        /**
+         * Fired when the request is done and the response data is processed.
+         *
+         * @event response-proceeded
+         */
 
-      _init: function() {
-        this._entries = [];
+        // published properties of the custom element
+        // @see https://www.polymer-project.org/0.5/docs/polymer/polymer.html#published-properties
+        publish: {
+          /**
+           * The `feed` attribute sets the json or xml format list which is requested via XMLHTTPRequest
+           * from the remote server.
+           *
+           * @attribute feed
+           * @type string
+           * @default ''
+           */
+          feed: '',
 
-        // check if all is alright
-        if (this.feed === '') {
-          console.warn('The current URL is empty, please specify one, that I can make a request ;)');
-        }
+          /**
+           * The `handleAs` attribute sets the format for the given feed. Valid inputs are **xml**, **json** and **xml**.
+           *
+           * @attribute handleAs
+           * @type string
+           * @default 'rss'
+           */
+          handleAs: 'xml',
 
-        if (this.handleAs !== 'json' && this.handleAs !== 'rss' && this.handleAs !== 'xml') {
-          console.warn('You must set the response type (attribute handleAs) of the given URL to proceed. ' +
-            'Please specify json, rss or xml.');
-        }
+          /**
+           * The `viewType` attribute sets the used view which is represented by the component. You can choose between
+           * **''** (empty string, which is the same as **'default'**) or **'compact'**. **'default'** shows you a title,
+           * date, category, description and an image. A link to the full article/video/whatever is linked too.
+           * **'compact'** doesn't show an image and the description.
+           *
+           * @attribute viewType
+           * @type string
+           * @default 'default'
+           */
+          viewType: {
+            value: 'default',
+            reflect: true // will be reflected to the custom elements attribute value if the viewType's value changes
+          },
 
-        if (this.viewType !== 'compact' && this.viewType !== 'default' && this.viewType !== '') {
-          console.warn('You have not set a viewType. Please use compact or default or keep it empty.');
-        }
-      },
+          /**
+           * The `sortByDateAsc` attribute specifies whether the entries should be sorted ascending or descending
+           * by their given date. **true** means the oldest entry is on top of the list, **false** vice versa.
+           *
+           * @attribute sortByDateAsc
+           * @type boolean
+           * @default false
+           */
+          sortByDateAsc: false,
 
-      // processes the response from the core-ajax component
-      _proceedResponse: function(response) {
-        if (this.handleAs == 'rss') {
-          // we can only handle rss by default, other formats must be provided by the pase/mapping function
-          this.setResponseParseFunc(this._rssParseFunc);
-        }
-        this._entries = this._responseParseFunc(response);
-        this.fire('response-proceeded', { msg: 'The response was successfully proceeded' });
-      },
+          /**
+           * The `dateFormat` attribute is used to set your own dateFormat which will be parsed by `Moment.js`. See
+           * http://momentjs.com/docs/#/parsing/string-format/ for all formats.
+           *
+           * @attribute dateFormat
+           * @type string
+           * @default ''
+           */
+          dateFormat: ''
+        },
 
-      // *** changed watchers ***
-      sortByDateAscChanged: function(oldVal, newVal) {
-        this._sortAsc = (newVal === 'true' || newVal === true);
-      },
+        /**
+         * This function sets the custom function defined by the consumer to parse the xml or json document
+         * properly. This function *must* return an array in the following structure:
+         *
+         *     ...
+         *     [{
+         *       title: 'My Title',
+         *       date: '2010-01-01T05:06:07',
+         *       category: 'My Category',
+         *       description: 'A bit more text',
+         *       link: 'http://www.google.com/'
+         *     }]
+         *     ...
+         *
+         * @method setResponseParseFunc
+         * @param func the function which parses the response
+         */
+        setResponseParseFunc: function(func) {
+          this._responseParseFunc = func;
+        },
 
-      // only resort when the sort direction has changed
-      _sortAscChanged: function(oldVal, newVal) {
-        this._resortEntries();
-      },
+        //
+        // *** lifecycle callbacks ***
+        //
+        // https://www.polymer-project.org/0.5/docs/polymer/polymer.html#lifecyclemethods
+        //
 
-      // *** filter methods ***
+        created: function() {
+          // initialize private variables only here and not on the prototype itself to prevent from
+          // getting a weird shared state across multiple instances of this component
+          this._responseParseFunc = null; // repsonse parse function
+          this._sortAsc = false;          // internal flag indicating the sort order
+          this._entries = [];
+        },
 
-      _filterSortEntries: function(entries) {
-        var me = this;
-        entries.sort(function(a, b) {
-          var asc = me._sortAsc;
-          var aC = asc ? moment(a.date) : moment(b.date);
-          var bC = asc ? moment(b.date) : moment(a.date);
+        // validate attributes everytime one changes its value
+        observe: {
+          feed: '_validationWarner',
+          handleAs: '_validationWarner',
+          viewType: '_validationWarner'
+        },
 
-          if (aC.isBefore(bC)) {
-            return -1;
-          } else if (aC.isAfter(bC)) {
-            return 1;
+        //
+        // *** changed watchers ***
+        //
+        // https://www.polymer-project.org/0.5/docs/polymer/polymer.html#change-watchers
+        //
+
+        viewTypeChanged: function(oldVal, newVal) {
+          this.viewType = newVal === '' ? 'default' : newVal;
+        },
+
+        sortByDateAscChanged: function(oldVal, newVal) {
+          this._sortAsc = (newVal === 'true' || newVal === true);
+        },
+
+        _sortAscChanged: function(oldVal, newVal) {
+          // resorts only when the sort direction has changed
+          // we cannot rerender the current shown list, so we must set the
+          // entries to an empty array to take effect
+          var tmp = this._entries;
+          this._entries = [];
+          this.job('a bit hackish', function() {
+            this._entries = tmp;
+          });
+        },
+
+        //
+        // *** event delegates ***
+        //
+        // https://www.polymer-project.org/0.5/docs/polymer/polymer.html#imperative-event-mapping
+        //
+        eventDelegates: {
+          'response-proceeded': function(event, detail, sender) {
+            console.info('The host element (ph-listview) sent a `response-proceeded` event to the outer world with ' +
+              'msg: "' + detail.msg + '"');
           }
-          return 0;
-        });
-        return entries;
-      },
+        },
 
-      _filterDateView: function(date) {
-        var date = this.dateFormat ? moment(date, this.dateFormat) : moment(date);
-        return date.format('DD.MM.YYYY - H:mm');
-      }
-    }, Polymer.MyHelper));
+        //
+        // *** callback handler ***
+        //
+        // https://www.polymer-project.org/0.5/docs/polymer/polymer.html#declarative-event-mapping
+        //
+        _requestCompleted: function(event, detail, sender) {
+          if (detail.response != 200) {
+            console.warn('The request to the given URL returns error code "' + detail.response + '". Please check the URL.');
+            return;
+          }
+          this._entries = [];
+
+          var response = _handleResponseStatic(this.handleAs, detail);  // static method call
+          if (this.handleAs == 'rss') {
+            // we can only handle rss by default, other formats must be provided by the pase/mapping function
+            this.setResponseParseFunc(this._rssParseFunc);
+          }
+          this._entries = this._responseParseFunc(response);
+          this.fire('response-proceeded', { msg: 'The response was successfully proceeded' });
+        },
+
+        //
+        // *** private methods ***
+        //
+
+        _validationWarner: function() {
+          // check if all is alright
+          if (this.feed === '') {
+            console.warn('The current URL is empty, please specify one, that I can make a request ;)');
+          }
+
+          if (this.handleAs !== 'json' && this.handleAs !== 'rss' && this.handleAs !== 'xml') {
+            console.warn('You must set the response type (attribute handleAs) of the given URL to proceed. ' +
+            'Please specify json, rss or xml.');
+          }
+
+          if (this.viewType !== 'compact' && this.viewType !== 'default' && this.viewType !== '') {
+            console.warn('You have not set a viewType. Please use compact or default or keep it empty.');
+          }
+        },
+
+        //
+        // *** filter methods ***
+        //
+        // https://www.polymer-project.org/0.5/docs/polymer/expressions.html#custom-filters
+        //
+
+        // sort filter
+        _filterSortEntries: function(entries) {
+          var me = this;
+          entries.sort(function(a, b) {
+            var asc = me._sortAsc;
+            var aC = asc ? moment(a.date) : moment(b.date);
+            var bC = asc ? moment(b.date) : moment(a.date);
+
+            if (aC.isBefore(bC)) {
+              return -1;
+            } else if (aC.isAfter(bC)) {
+              return 1;
+            }
+            return 0;
+          });
+          return entries;
+        },
+
+        // date format filter
+        _filterDateView: function(date) {
+          var date = this.dateFormat ? moment(date, this.dateFormat) : moment(date);
+          return date.format('DD.MM.YYYY - H:mm');
+        }
+      }, Polymer.MyHelper));
+    })();
   </script>
 </polymer-element>
