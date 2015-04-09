@@ -145,6 +145,12 @@ Please note: The date must be parseable by the `Moment.js` library.
   <script>
     Polymer(Polymer.mixin({ // Mixins @see https://www.polymer-project.org/0.5/docs/polymer/helpers.html#using-mixins
 
+      /**
+       * Fired when the request is done and the response data is processed.
+       *
+       * @event response-proceeded
+       */
+
       // published properties of the custom element
       // @see https://www.polymer-project.org/0.5/docs/polymer/polymer.html#published-properties
       publish: {
