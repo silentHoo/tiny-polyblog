@@ -143,7 +143,10 @@ Please note: The date must be parseable by the `Moment.js` library.
   </template>
 
   <script>
-    Polymer(Polymer.mixin({
+    Polymer(Polymer.mixin({ // Mixins @see https://www.polymer-project.org/0.5/docs/polymer/helpers.html#using-mixins
+
+      // published properties of the custom element
+      // @see https://www.polymer-project.org/0.5/docs/polymer/polymer.html#published-properties
       publish: {
         /**
          * The `feed` attribute sets the json or xml format list which is requested via XMLHTTPRequest
@@ -174,7 +177,10 @@ Please note: The date must be parseable by the `Moment.js` library.
          * @type string
          * @default 'default'
          */
-        viewType: 'default',
+        viewType: {
+          value: 'default',
+          reflect: true // will be reflected to the custom elements attribute value if the viewType's value changes
+        },
 
         /**
          * The `sortByDateAsc` attribute specifies whether the entries should be sorted ascending or descending
@@ -201,6 +207,8 @@ Please note: The date must be parseable by the `Moment.js` library.
       _sortAsc: false,  // internal flag indicating the sort order
 
       // *** lifecycle callbacks ***
+      // @see https://www.polymer-project.org/0.5/docs/polymer/polymer.html#lifecyclemethods
+
       ready: function() {
         // initialize private variables only here and not on the prototype itself to prevent from
         // getting a weird shared state across multiple instances of this component
@@ -210,6 +218,15 @@ Please note: The date must be parseable by the `Moment.js` library.
       domReady: function() {
         this._init();
       },
+
+      // *** event delegates ***
+      // @see https://www.polymer-project.org/0.5/docs/polymer/polymer.html#imperative-event-mapping
+      /*eventDelegates: {
+        'response-proceeded': function(event, detail, sender) {
+          console.info('The host element (ph-listview) sent a `response-proceeded` event to the outer world with ' +
+            'msg: "' + detail.msg + '"');
+        }
+      },*/
 
       /**
        * This function sets the custom function defined by the consumer to parse the xml or json document
@@ -232,7 +249,7 @@ Please note: The date must be parseable by the `Moment.js` library.
         this._responseParseFunc = func;
       },
 
-      // callback handler
+      // callback handler, @see https://www.polymer-project.org/0.5/docs/polymer/polymer.html#declarative-event-mapping
       _requestCompleted: function(event, detail, sender) {
         if (detail.response != 200) {
           console.warn('The request to the given URL returns error code "' + detail.response + '". Please check the URL.');
@@ -289,6 +306,7 @@ Please note: The date must be parseable by the `Moment.js` library.
           this.setResponseParseFunc(this._rssParseFunc);
         }
         this._entries = this._responseParseFunc(response);
+        this.fire('response-proceeded', { msg: 'The response was successfully proceeded' });
       },
 
       // *** changed watchers ***
