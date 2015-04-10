@@ -2,7 +2,6 @@
 <link rel="import" href="../../../bower_components/core-list/core-list.html">
 <link rel="import" href="../../../bower_components/core-image/core-image.html">
 <link rel="import" href="../helpers.html">
-<script type="text/javascript" src="../../../bower_components/moment/min/moment.min.js"></script>
 
 <!--
 This component requests data from a given feed and lists them in a listview powered by `<core-list>`. You provide a
@@ -91,6 +90,7 @@ Please note: The date must be parseable by the `Moment.js` library.
 <polymer-element name="ph-listview" constructor="PhListView">
   <template>
     <link rel="stylesheet" href="ph-listview.css">
+    <script type="text/javascript" src="../../../bower_components/moment/min/moment.min.js"></script>
 
     <!-- non-visible 3rd party component -->
     <core-ajax auto url="{{ feed }}" on-core-complete="{{ _requestCompleted }}"></core-ajax>
